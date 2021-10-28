@@ -6,21 +6,15 @@ output:
 
 # Purpose
 
-The aim of this folder is to 
+The aim of this README is to explain the various files and data sets that make up this Advanced Cross Section Econometrics project, which forms part of my masters degree.
+
+The idea is to try and predict ward-level incomes using night lights data -
 
 
-
-```{r}
-
-rm(list = ls()) # Clean your environment:
-gc() # garbage collection - It can be useful to call gc after a large object has been removed, as this may prompt R to return memory to the operating system.
-library(pacman)
-p_load(tidyverse, rmsfuns)
-
-# Source in all your functions:
-list.files('code/', full.names = T, recursive = T) %>% as.list() %>% walk(~source(.))
-
-Result <- example_function(x = 10, y = 20)
+* 
+* 
+* 
+* 
+* 
 
 
-```
