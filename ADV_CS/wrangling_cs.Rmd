@@ -1,0 +1,49 @@
+---
+title: "wrangling"
+author: "J Coetsee - 19491050"
+date: "08/11/2021"
+output: html_document
+---
+
+### Packages:
+
+```{r}
+#### Clean Environment ####
+
+rm(list =ls())
+gc()
+
+#### Packages ####
+
+library(pacman)
+p_load(REAT, sp, ineq, DescTools, tmap, rgdal, ggplot2, readxl, sf,foreign, tidyverse)
+theme_set(theme_light())
+
+#### Global Functions ####
+
+list.files('code/', full.names = T, recursive = T) %>% as.list() %>% walk(~source(.))
+
+#### Shapefile Data ####
+
+shpward <- st_read("data/shapefile/c1a23db3-8f2f-40c7-bd3e-ae9fed1eb0322020329-1-ihxzob.tk9kh.shp") %>% dplyr::select(-Year) %>% filter(OBJECTID < 4278)
+
+shp0 <- st_read("data/shapefile/gadm36_ZAF_shp/gadm36_ZAF_0.shp")
+shp1 <- st_read("data/shapefile/gadm36_ZAF_shp/gadm36_ZAF_1.shp")
+shp2 <- st_read("data/shapefile/gadm36_ZAF_shp/gadm36_ZAF_2.shp")
+shp3 <- st_read("data/shapefile/gadm36_ZAF_shp/gadm36_ZAF_3.shp")
+
+plot(shp2$geometry)
+```
+
+
+```{r}
+
+# Read in 
+
+data <- read.csv("data/table_2021-11-17_14-37-06.csv", head = FALSE, sep=",", skip = 10)
+
+
+head(data, 2000) %>% view()
+
+```
+
