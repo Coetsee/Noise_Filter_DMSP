@@ -1,0 +1,377 @@
+\documentclass[11pt,preprint, authoryear]{elsarticle}
+
+\usepackage{lmodern}
+%%%% My spacing
+\usepackage{setspace}
+\setstretch{1.2}
+\DeclareMathSizes{12}{14}{10}{10}
+
+% Wrap around which gives all figures included the [H] command, or places it "here". This can be tedious to code in Rmarkdown.
+\usepackage{float}
+\let\origfigure\figure
+\let\endorigfigure\endfigure
+\renewenvironment{figure}[1][2] {
+    \expandafter\origfigure\expandafter[H]
+} {
+    \endorigfigure
+}
+
+\let\origtable\table
+\let\endorigtable\endtable
+\renewenvironment{table}[1][2] {
+    \expandafter\origtable\expandafter[H]
+} {
+    \endorigtable
+}
+
+
+\usepackage{ifxetex,ifluatex}
+\usepackage{fixltx2e} % provides \textsubscript
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+\else % if luatex or xelatex
+  \ifxetex
+    \usepackage{mathspec}
+    \usepackage{xltxtra,xunicode}
+  \else
+    \usepackage{fontspec}
+  \fi
+  \defaultfontfeatures{Mapping=tex-text,Scale=MatchLowercase}
+  \newcommand{\euro}{€}
+\fi
+
+\usepackage{amssymb, amsmath, amsthm, amsfonts}
+
+\def\bibsection{\section*{References}} %%% Make "References" appear before bibliography
+
+
+\usepackage[round]{natbib}
+
+\usepackage{longtable}
+\usepackage[margin=2.3cm,bottom=2cm,top=2.5cm, includefoot]{geometry}
+\usepackage{fancyhdr}
+\usepackage[bottom, hang, flushmargin]{footmisc}
+\usepackage{graphicx}
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+\setlength{\parindent}{0cm}
+\setlength{\parskip}{1.3ex plus 0.5ex minus 0.3ex}
+\usepackage{textcomp}
+\renewcommand{\headrulewidth}{0.2pt}
+\renewcommand{\footrulewidth}{0.3pt}
+
+\usepackage{array}
+\newcolumntype{x}[1]{>{\centering\arraybackslash\hspace{0pt}}p{#1}}
+
+%%%%  Remove the "preprint submitted to" part. Don't worry about this either, it just looks better without it:
+\makeatletter
+\def\ps@pprintTitle{%
+  \let\@oddhead\@empty
+  \let\@evenhead\@empty
+  \let\@oddfoot\@empty
+  \let\@evenfoot\@oddfoot
+}
+\makeatother
+
+ \def\tightlist{} % This allows for subbullets!
+
+\usepackage{hyperref}
+\hypersetup{breaklinks=true,
+            bookmarks=true,
+            colorlinks=true,
+            citecolor=blue,
+            urlcolor=blue,
+            linkcolor=blue,
+            pdfborder={0 0 0}}
+
+
+% The following packages allow huxtable to work:
+\usepackage{siunitx}
+\usepackage{multirow}
+\usepackage{hhline}
+\usepackage{calc}
+\usepackage{tabularx}
+\usepackage{booktabs}
+\usepackage{caption}
+
+
+\newenvironment{columns}[1][]{}{}
+
+\newenvironment{column}[1]{\begin{minipage}{#1}\ignorespaces}{%
+\end{minipage}
+\ifhmode\unskip\fi
+\aftergroup\useignorespacesandallpars}
+
+\def\useignorespacesandallpars#1\ignorespaces\fi{%
+#1\fi\ignorespacesandallpars}
+
+\makeatletter
+\def\ignorespacesandallpars{%
+  \@ifnextchar\par
+    {\expandafter\ignorespacesandallpars\@gobble}%
+    {}%
+}
+\makeatother
+
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newenvironment{CSLReferences}%
+  {\setlength{\parindent}{0pt}%
+  \everypar{\setlength{\hangindent}{\cslhangindent}}\ignorespaces}%
+  {\par}
+
+
+\urlstyle{same}  % don't use monospace font for urls
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{3em}  % prevent overfull lines
+\setcounter{secnumdepth}{5}
+
+%%% Use protect on footnotes to avoid problems with footnotes in titles
+\let\rmarkdownfootnote\footnote%
+\def\footnote{\protect\rmarkdownfootnote}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+
+%%% Include extra packages specified by user
+
+%%% Hard setting column skips for reports - this ensures greater consistency and control over the length settings in the document.
+%% page layout
+%% paragraphs
+\setlength{\baselineskip}{12pt plus 0pt minus 0pt}
+\setlength{\parskip}{12pt plus 0pt minus 0pt}
+\setlength{\parindent}{0pt plus 0pt minus 0pt}
+%% floats
+\setlength{\floatsep}{12pt plus 0 pt minus 0pt}
+\setlength{\textfloatsep}{20pt plus 0pt minus 0pt}
+\setlength{\intextsep}{14pt plus 0pt minus 0pt}
+\setlength{\dbltextfloatsep}{20pt plus 0pt minus 0pt}
+\setlength{\dblfloatsep}{14pt plus 0pt minus 0pt}
+%% maths
+\setlength{\abovedisplayskip}{12pt plus 0pt minus 0pt}
+\setlength{\belowdisplayskip}{12pt plus 0pt minus 0pt}
+%% lists
+\setlength{\topsep}{10pt plus 0pt minus 0pt}
+\setlength{\partopsep}{3pt plus 0pt minus 0pt}
+\setlength{\itemsep}{5pt plus 0pt minus 0pt}
+\setlength{\labelsep}{8mm plus 0mm minus 0mm}
+\setlength{\parsep}{\the\parskip}
+\setlength{\listparindent}{\the\parindent}
+%% verbatim
+\setlength{\fboxsep}{5pt plus 0pt minus 0pt}
+
+
+
+\begin{document}
+
+
+
+\begin{frontmatter}  %
+
+\title{Night Lights and Noisy Data - Using Machine Learning to Better
+Detect Human-Generated Light}
+
+% Set to FALSE if wanting to remove title (for submission)
+
+
+
+
+\author[Add1]{Johannes Coetsee}
+\ead{19491050@sun.ac.za}
+
+
+
+
+
+\address[Add1]{Stellenbosch University}
+
+
+\begin{abstract}
+\small{
+Abstract to be written here. The abstract should not be too long and
+should provide the reader with a good understanding what you are writing
+about. Academic papers are not like novels where you keep the reader in
+suspense. To be effective in getting others to read your paper, be as
+open and concise about your findings here as possible. Ideally, upon
+reading your abstract, the reader should feel he / she must read your
+paper in entirety.
+}
+\end{abstract}
+
+\vspace{1cm}
+
+\begin{keyword}
+\footnotesize{
+Remote Sensing \sep Night Lights \sep Random Forest \\ \vspace{0.3cm}
+}
+\end{keyword}
+\vspace{0.5cm}
+\end{frontmatter}
+
+
+
+%________________________
+% Header and Footers
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\pagestyle{fancy}
+\chead{}
+\rhead{Advanced Cross Section - January 2022}
+\lfoot{}
+\rfoot{\footnotesize Page \thepage}
+\lhead{}
+%\rfoot{\footnotesize Page \thepage } % "e.g. Page 2"
+\cfoot{}
+
+%\setlength\headheight{30pt}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%________________________
+
+\headsep 35pt % So that header does not go over title
+
+
+
+
+\hypertarget{introduction}{%
+\section{\texorpdfstring{Introduction
+\label{Introduction}}{Introduction }}\label{introduction}}
+
+The use of remote sensing data, and more specifically, satellite
+nighttime light data, presents potential for new and diverse
+applications in socioeconomic research. Nightlight data remains a
+largely objective measure, and is thereby suitable to use as a proxy in
+a broad array of studies that require the usage of potentially
+unreliable or otherwise lacking data. This advantage is especially
+pertinent in parts of the developing world, where socioeconomic research
+can prove most beneficial. There exists different night lights products
+which can be utilized towards this end, the most common of which is the
+`Stable Lights' product, derived from the Defense Meteorological
+Satellite Program's (DMSPs) Operational Linescan System (OLS). This
+paper emphasises the usage of this product specifically focusing on its
+shortcomings. Most prominently, DMSP-OLS has difficulty in separating
+background noise from night lights generated from human-generated light,
+especially in areas that display lower levels of night light intensity.
+This presents an obvious problem: analyses that attempt to use Stable
+Lights as a proxy for economic activity, for instance, would exaggerate
+or understate economic activity in these low-luminous areas.
+
+This paper attempts to address the challenge of inaccurate measurement
+of night lights by applying a filtering technique to identify and
+separate nightlights emitted by humans from those emitted by anything
+else. This filtering process is based on the methodology for deriving
+the `Local Human Lights' product by Määttä \& Lessmann
+(\protect\hyperlink{ref-maatta}{2019}), and relies on a Random Forest
+(RF) Machine Learning algorithm for classification.
+
+\hypertarget{explication-of-the-problem}{%
+\section{Explication of the Problem}\label{explication-of-the-problem}}
+
+\hypertarget{stable-lights-and-economic-activity}{%
+\subsection{Stable Lights and Economic
+Activity}\label{stable-lights-and-economic-activity}}
+
+The most prominent difficulty, however, relates to the amount of noise
+in the lower end of the light distribution due in part to the blooming
+effect mentioned above. Standard practice using the stable lights data
+set is to discard these values from analysis, thereby removing a large
+proportion of cell observations.
+
+DMSP-OLS
+
+\hypertarget{problems-with-stable-lights}{%
+\subsection{Problems with Stable
+Lights}\label{problems-with-stable-lights}}
+
+\hypertarget{method-and-data}{%
+\section{\texorpdfstring{Method and Data
+\label{Methodology}}{Method and Data }}\label{method-and-data}}
+
+The filtering process used by Määttä \& Lessmann
+(\protect\hyperlink{ref-maatta}{2019}) necessitates the following steps:
+
+\begin{itemize}
+\tightlist
+\item
+\item
+\item
+\item
+\item
+\end{itemize}
+
+\hypertarget{data}{%
+\subsection{Data}\label{data}}
+
+Although our methodology largely follows that presented by Määttä \&
+Lessmann (\protect\hyperlink{ref-maatta}{2019}), there are some distinct
+differences.
+
+\begin{itemize}
+\tightlist
+\item
+  Size of area
+\item
+  Jitter size
+\item
+  Probability of human-generated
+\item
+\end{itemize}
+
+\hypertarget{algorithm}{%
+\subsection{Algorithm}\label{algorithm}}
+
+\hypertarget{results}{%
+\section{\texorpdfstring{Results
+\label{Results}}{Results }}\label{results}}
+
+\hypertarget{discussion}{%
+\section{\texorpdfstring{Discussion
+\label{Conclusion}}{Discussion }}\label{discussion}}
+
+This paper explicated on the usage of a filtering methodology proposed
+by Määttä \& Lessmann (\protect\hyperlink{ref-maatta}{2019}) with which
+to separate background noise from human-generated nightlight data.
+
+Our results echo those by Määttä \& Lessmann
+(\protect\hyperlink{ref-maatta}{2019}): the RF algorithm introduces
+great improvements in classification accuracy and thus greater accuracy
+in filtering out background noise from the `Stable Lights' product. This
+allows the researcher to do away with the need for quick-and-easy type
+fixes to noisy data at the lower end of the luminosity distribution.
+
+However, it is important to note what this method does not achieve. For
+instance, the `Human Lights' product does not address the issue of
+blooming or oversaturation at the high end of the luminosity spectrum.
+Likewise, its spatial resolution remains low in comparison to more
+modern products such as the Visible Infrared Imaging Radiometer Suite
+(VIIRS), and it is recommended to use these products rather than the
+DMSP-OLS `Stable Lights' or `Human Lights' products if possible.
+
+\newpage
+
+\hypertarget{references}{%
+\section*{References}\label{references}}
+\addcontentsline{toc}{section}{References}
+
+\hypertarget{refs}{}
+\begin{CSLReferences}{1}{0}
+\leavevmode\vadjust pre{\hypertarget{ref-maatta}{}}%
+Määttä, I. \& Lessmann, C. 2019. Human lights. \emph{Remote Sensing}.
+11(19):2194.
+
+\end{CSLReferences}
+
+\hypertarget{appendix}{%
+\section*{Appendix}\label{appendix}}
+\addcontentsline{toc}{section}{Appendix}
+
+\hypertarget{appendix-a}{%
+\subsection*{Appendix A}\label{appendix-a}}
+\addcontentsline{toc}{subsection}{Appendix A}
+
+\bibliography{Tex/ref}
+
+
+
+
+
+\end{document}
