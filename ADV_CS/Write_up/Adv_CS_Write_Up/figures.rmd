@@ -1,0 +1,74 @@
+---
+title: "figures"
+author: "J Coetsee - 19491050"
+date: "22/01/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+rm(list =ls())
+gc()
+# Open/install required packages
+#################################################
+lop <- c("raster", "RColorBrewer", "rgdal", "tictoc", "rgeos", "foreach", "doSNOW", "stringr","dplyr",
+         "sp", "parallel", "ggplot2", "randomForest", "plm", "glmnet",
+         "foreign", "tree", "gbm","fasterize","sf","caret")
+newp <- lop[!(lop %in% installed.packages()[,"Package"])]
+if(length(newp)) install.packages(newp)
+lapply(lop, require, character.only = TRUE)
+rasterOptions(progress= "text", timer =T)
+
+```
+
+
+```{r}
+### Read in Tif files from thesis wd:
+# open prepared data
+avg <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/downloaded/nightlight/avg/F182011.v4c_web.avg_vis.tif"))
+pct <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/downloaded/nightlight/pct/F182011.v4c.avg_lights_x_pct.tif"))
+lma <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/prepared/nightlight/local_variables/lm_freq_5_f182011.tif"))
+lmb <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/prepared/nightlight/local_variables/lm_avg_25_f182011.tif"))
+lmc <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/prepared/nightlight/local_variables/lm_freq_99_f182011.tif"))
+lmd <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/prepared/nightlight/local_variables/lm_avg_199_f182011.tif"))
+lme <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/prepared/nightlight/local_variables/local_noise_f182011.tif"))
+lmf <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/prepared/nightlight/local_variables/local_detections_f182011.tif"))
+bui <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/prepared/builtup/built_2011.tif"))
+
+#shapefile to crop to 
+
+shpSA <- readOGR("C:/SARB/Truck-o-Meter/Truck-o-Meter/data/shapefile/gadm36_ZAF_0.shp")
+shpSA <- spTransform(shpSA, crs(avg))
+
+
+# match extent of the input raster images
+avg = crop(avg,extent(shpSA))
+avg_mask = mask(avg, shpSA)
+pct = crop(pct,extent(shpSA))
+lma = crop(lma,extent(shpSA))
+lmb = crop(lmb,extent(shpSA))
+lmc = crop(lmc,extent(shpSA))
+lmd = crop(lmd,extent(shpSA))
+lmf = crop(lmf,extent(shpSA))
+bui = crop(bui,extent(shpSA))
+
+my.palette <- brewer.pal(n = 20, name = "OrRd")
+projection(avg_mask) <- "+proj=longlat +datum=WGS84 +no_defs"
+
+
+
+plot(avg_mask, 
+     col= my.palette,
+     box = F, 
+     axes = F)
+plot(shpSA, border = "black", add = T)
+
+
+
+# to make DF:
+avg <- rasterToPoints(avg, spatial = TRUE)
+# Then to a 'conventional' dataframe
+avg_df  <- data.frame(avg)
+
+
+```
+

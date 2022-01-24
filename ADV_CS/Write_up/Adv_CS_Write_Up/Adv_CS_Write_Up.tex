@@ -189,13 +189,21 @@ Detect Human-Generated Light}
 
 \begin{abstract}
 \small{
-Abstract to be written here. The abstract should not be too long and
-should provide the reader with a good understanding what you are writing
-about. Academic papers are not like novels where you keep the reader in
-suspense. To be effective in getting others to read your paper, be as
-open and concise about your findings here as possible. Ideally, upon
-reading your abstract, the reader should feel he / she must read your
-paper in entirety.
+In recent years, researchers in the social sciences have increasingly
+relied on the usage of alternative sources of data with which to answer
+research questions. One of the avenues remote sensing data, and more
+specifically, satellite data, as . One of the most prominent of these
+datasets, the stable lights product from DMSP-OLS, has been especially
+helpful. However, this product suffers from some potentially severe
+accuracy-related problems. The following paper explicates on some of
+these, and implements an adjusted version of the noise-filtering
+methodology proposed by Määttä \& Lessmann
+(\protect\hyperlink{ref-maatta}{2019}), in which the authors use a
+variety of derived and externally sourced remote sensing inputs to
+inform a Random Forest algorithm that categorises night-light data as
+being human-generated. This methodology proves fruitful in preserving
+data at the lower end of the light spectrum, which is often discarded
+due to it being too noisy.
 }
 \end{abstract}
 
@@ -276,30 +284,139 @@ effect mentioned above. Standard practice using the stable lights data
 set is to discard these values from analysis, thereby removing a large
 proportion of cell observations.
 
-DMSP-OLS
-
-\hypertarget{problems-with-stable-lights}{%
-\subsection{Problems with Stable
-Lights}\label{problems-with-stable-lights}}
-
 \hypertarget{method-and-data}{%
 \section{\texorpdfstring{Method and Data
 \label{Methodology}}{Method and Data }}\label{method-and-data}}
 
-The filtering process used by Määttä \& Lessmann
-(\protect\hyperlink{ref-maatta}{2019}) necessitates the following steps:
-
 \begin{itemize}
 \tightlist
 \item
-\item
-\item
-\item
-\item
+  Short overview of Määttä \& Lessmann
+  (\protect\hyperlink{ref-maatta}{2019})
 \end{itemize}
+
+The filtering process used by Määttä \& Lessmann
+(\protect\hyperlink{ref-maatta}{2019}) attempts to more accurately
+detect specifically \emph{human-generated} night lights
 
 \hypertarget{data}{%
 \subsection{Data}\label{data}}
+
+Table ref\{variables\_table\} below gives an overview of the most
+important inputs
+
+``- Global Human Settlement Layer (GHSL) built-up grid. It is based on
+Landsat satellite images and prepared following the GHSL methodology
+
+-The most important variables are the average visible band (avg\_light)
+and frequency of light detection (freq\_light) images from NOAA. They
+provide information on average light over one year and the percentage of
+days with light detections in a pixel.
+
+\begin{itemize}
+\item
+  In addition, we generate variables that describe light characteristics
+  around a pixel. The regional input variables address concerns that the
+  background noise in light data differs across regions. We use a
+  local\_noise variable to identify regions, where the background noise
+  in avg\_light is systematically higher. The variable counts the number
+  of pixels below the value 6 in avg\_light image in a square window of
+  499 × 499 pixels for all pixels.
+\item
+  For the Local Human Lights product, we add more variables on local
+  light characteristics to maximize the classification accuracy. We
+  create these variables by taking averages of avg\_light and
+  freq\_light on different area sizes around a pixel. For example,
+  lm\_avg\_199 calculates the average of avg\_light in a 199 × 199 pixel
+  area around a pixel. Similarly, we create the variables lm\_freq\_5,
+  lm\_avg\_25 and lm\_freq\_99. The reason for adding local averages on
+  different area sizes is that we do not know the correct radius of
+  spatial correlation in human-generated light. ''
+\end{itemize}
+
+\hypertarget{methodology}{%
+\subsection{Methodology}\label{methodology}}
+
+Maatta's methodology necessitates the following steps:
+
+First, a host of regional night light variables are created from two of
+the original DMSP-OLS products. These variables constitute some of the
+most important inputs of the RF algorithm.
+
+The second step in Määttä \& Lessmann
+(\protect\hyperlink{ref-maatta}{2019})'s methodology is related to the
+division of the world map in various sub-regions, with the algorithm
+
+\begin{longtable}[]{@{}l@{}}
+\toprule
+\endhead
+5. Local Human Lights Process \\
+Our second product shifts weight from minimizing regional bias to
+maximizing the accuracy in \\
+human-generated light detection. We utilize the regional light
+characteristics in the filtering process in two ways. First, we include
+more regional variables as inputs in the random forest algorithm.
+Second, \\
+we divide the world into sub-regions and run the algorithm separately
+for each region. This allows \\
+the algorithm to learn how the light characteristics relate to built-up
+areas in different sub-regions. \\
+Since that relationship most likely differs across the world, we achieve
+a better prediction accuracy by \\
+allowing for variations in the classification rule. \\
+In practice, we crop the variable images into 2000 × 2000 pixel
+sub-regions after the data preparation \\
+phase (Step 1). Accordingly, the size of a sub-region is approximately
+3.4 million km2 at the equator, \\
+which is close to the size of India. The number of rows in a sub-region
+is 4 million, and we take a \\
+subsample of 10\% for the model training. By running different versions,
+we found this window size to \\
+have a good balance between improvements in prediction accuracy and
+being widely independent of \\
+the quality of the built-up data. However, the changes in the
+classification rule across the sub-regions \\
+causes a problem at their borders. The shifts in predicted
+probabilities, and consequently the number \\
+of lit pixels, are visibly clear. \\
+The solution for smoothing the border effects is to move the sub-region
+window in smaller steps \\
+and then average the results. The step size should be as small as
+possible, but we rapidly run into \\
+computational constraints. Therefore, we decide to move the window in
+steps of 250 pixels so that we \\
+receive 64 values for each pixel. Unlike in the global approach, we now
+set the number of lit pixels \\
+within each window by using a 4\% tolerance level. This means that we
+keep classifying light in pixels \\
+as human-generated in the order of highest probability until 4\% of
+avg\_light pixels with values below 5 \\
+are included. By setting the amount of light with this tolerance
+threshold, we avoid having to make \\
+subjective choices of light amounts across regions or base them on the
+built-up data. However, we have \\
+to include a backstop or we end up adding lit pixels also in areas where
+there is no human-generated \\
+light at all. Therefore, we additionally set all pixels with a predicted
+probability less than 20\% of being \\
+human-generated to zero. \\
+As described above, we classify light in each pixel 64 times by the
+overlapping sub-region windows \\
+as human-generated or not. After Step 3 in the filtering process, we
+mosaic all the windows and \\
+count the classifications. We then create the final product in Step 4 by
+taking the light value from the \\
+average visible band image if a pixel is classified as human-generated
+more than eight times out of \\
+64. Otherwise, we set the light value in a pixel to zero. The
+requirement of eight human-generated \\
+light classifications makes a final global adjustment to the amount of
+light. We have chosen the light \\
+amount settings in a way that balances the improvement in detecting
+human-generated light while \\
+keeping misclassifications at a low level. Howeve \\
+\bottomrule
+\end{longtable}
 
 Although our methodology largely follows that presented by Määttä \&
 Lessmann (\protect\hyperlink{ref-maatta}{2019}), there are some distinct
@@ -314,22 +431,36 @@ differences.
 \item
   Probability of human-generated
 \item
+  only f152001, we do f142001 and f182011 as well
 \end{itemize}
 
-\hypertarget{algorithm}{%
-\subsection{Algorithm}\label{algorithm}}
+\hypertarget{random-forest-algorithm}{%
+\subsection{Random Forest Algorithm}\label{random-forest-algorithm}}
+
+RF
 
 \hypertarget{results}{%
 \section{\texorpdfstring{Results
 \label{Results}}{Results }}\label{results}}
 
+\begin{itemize}
+\tightlist
+\item
+  maps comparing stable lights with noise removed vs human-generated
+  light (overlay map)
+\item
+  also amount/percentage of pixels saved
+\item
+  accuracy measures?
+\end{itemize}
+
 \hypertarget{discussion}{%
 \section{\texorpdfstring{Discussion
-\label{Conclusion}}{Discussion }}\label{discussion}}
+\label{Discussion}}{Discussion }}\label{discussion}}
 
-This paper explicated on the usage of a filtering methodology proposed
-by Määttä \& Lessmann (\protect\hyperlink{ref-maatta}{2019}) with which
-to separate background noise from human-generated nightlight data.
+This paper extended the usage of a filtering methodology proposed by
+Määttä \& Lessmann (\protect\hyperlink{ref-maatta}{2019}) with which to
+separate background noise from human-generated nightlight data.
 
 Our results echo those by Määttä \& Lessmann
 (\protect\hyperlink{ref-maatta}{2019}): the RF algorithm introduces
@@ -364,9 +495,20 @@ Määttä, I. \& Lessmann, C. 2019. Human lights. \emph{Remote Sensing}.
 \section*{Appendix}\label{appendix}}
 \addcontentsline{toc}{section}{Appendix}
 
-\hypertarget{appendix-a}{%
-\subsection*{Appendix A}\label{appendix-a}}
-\addcontentsline{toc}{subsection}{Appendix A}
+\begin{itemize}
+\tightlist
+\item
+  images of all the different local images - refer them back to
+  variables table
+\end{itemize}
+
+plot of initial stable lights product
+
+plot of stable lights product with noise filtered out at lower end
+
+plot of noise-filtered result
+
+overlay plot of the above two with different colours
 
 \bibliography{Tex/ref}
 
