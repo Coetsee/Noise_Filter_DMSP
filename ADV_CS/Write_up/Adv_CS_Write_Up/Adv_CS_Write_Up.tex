@@ -191,19 +191,22 @@ Detect Human-Generated Light}
 \small{
 In recent years, researchers in the social sciences have increasingly
 relied on the usage of alternative sources of data with which to answer
-research questions. One of the avenues remote sensing data, and more
-specifically, satellite data, as . One of the most prominent of these
-datasets, the stable lights product from DMSP-OLS, has been especially
-helpful. However, this product suffers from some potentially severe
-accuracy-related problems. The following paper explicates on some of
-these, and implements an adjusted version of the noise-filtering
-methodology proposed by Määttä \& Lessmann
-(\protect\hyperlink{ref-maatta}{2019}), in which the authors use a
-variety of derived and externally sourced remote sensing inputs to
-inform a Random Forest algorithm that categorises night-light data as
-being human-generated. This methodology proves fruitful in preserving
-data at the lower end of the light spectrum, which is often discarded
-due to it being too noisy.
+research questions. One of these alternative avenues are remote sensing
+data, and more specifically, satellite data. One of the most prominent
+of these datasets, the Stable Lights product, derived from the Defense
+Meteorological Satellite Program's (DMSPs) Operational Linescan System
+(OLS), has been especially popular. However, this product, which
+captures nightlight luminosity (NL) suffers from some potentially severe
+accuracy-related challenges, such as the blooming effect and background
+noise. The following paper explicates on some of these challenges, and
+implements an adjusted version of the noise-filtering methodology
+proposed by Määttä \& Lessmann (\protect\hyperlink{ref-maatta}{2019}),
+in which the authors use a variety of derived and externally-sourced
+remote sensing inputs to inform a Random Forest (RF) algorithm that
+categorises night-light data as being human-generated. This methodology
+proves fruitful in addressing some of the challenges related to NL data,
+and therefore also in preserving data at the lower end of the light
+spectrum.
 }
 \end{abstract}
 
@@ -224,7 +227,7 @@ Remote Sensing \sep Night Lights \sep Random Forest \\ \vspace{0.3cm}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \pagestyle{fancy}
 \chead{}
-\rhead{Advanced Cross Section - January 2022}
+\rhead{Advanced Cross Section Econometrics - January 2022}
 \lfoot{}
 \rfoot{\footnotesize Page \thepage}
 \lhead{}
@@ -244,45 +247,92 @@ Remote Sensing \sep Night Lights \sep Random Forest \\ \vspace{0.3cm}
 \section{\texorpdfstring{Introduction
 \label{Introduction}}{Introduction }}\label{introduction}}
 
-The use of remote sensing data, and more specifically, satellite
-nighttime light data, presents potential for new and diverse
-applications in socioeconomic research. Nightlight data remains a
-largely objective measure, and is thereby suitable to use as a proxy in
-a broad array of studies that require the usage of potentially
-unreliable or otherwise lacking data. This advantage is especially
-pertinent in parts of the developing world, where socioeconomic research
-can prove most beneficial. There exists different night lights products
-which can be utilized towards this end, the most common of which is the
-`Stable Lights' product, derived from the Defense Meteorological
-Satellite Program's (DMSPs) Operational Linescan System (OLS). This
-paper emphasises the usage of this product specifically focusing on its
-shortcomings. Most prominently, DMSP-OLS has difficulty in separating
-background noise from night lights generated from human-generated light,
-especially in areas that display lower levels of night light intensity.
-This presents an obvious problem: analyses that attempt to use Stable
-Lights as a proxy for economic activity, for instance, would exaggerate
-or understate economic activity in these low-luminous areas.
+In recent years, the expansion of the usage of remote sensing data
+presents potential for new and diverse applications in socioeconomic
+research. These data sources are often deemed largely objective and free
+from standard sample selection challenges, and is thereby suitable as a
+proxy in a broad array of studies that require the usage of potentially
+unreliable or unavailable data. This advantage is especially pertinent
+in parts of the developing world, where good data can be relatively hard
+to come by. One of the most prominent remote sensing data avenues has
+been the satellite-derived nightlight luminosity data sets, with
+luminosity often being used as a proxy for important measures such as
+population counts\footnote{See, for instance, Mellander, Lobo, Stolarick
+  \& Matheson (\protect\hyperlink{ref-mellander2015night}{2015})},
+economic activity and growth \footnote{Elvidge, Baugh, Kihn, Kroehl,
+  Davis \& Davis (\protect\hyperlink{ref-elvidge1997}{1997}); Henderson,
+  Storeygard \& Weil (\protect\hyperlink{ref-henderson2012}{2012}) and
+  Chen \& Nordhaus (\protect\hyperlink{ref-chen2011}{2011}) are
+  prominent examples} and regional inequality indices.\footnote{Such as
+  in Ivan, Holobâcă, Benedek \& Török
+  (\protect\hyperlink{ref-ivan2020nlinequality}{2020}) and Mveyange
+  (\protect\hyperlink{ref-mveyange2015}{2015})}
+
+There exists different night lights products which can be utilized
+towards this end, the most common of which is the `Stable Lights'
+product, derived from the Defense Meteorological Satellite Program's
+(DMSPs) Operational Linescan System (OLS). This paper emphasises the
+usage of this product specifically focusing on its shortcomings. Most
+prominently, DMSP-OLS has difficulty in separating background noise from
+night lights generated from human-generated light, especially in areas
+that display lower levels of night light intensity. This presents an
+obvious and difficult-to-overcome challenge: analyses that attempt to
+use Stable Lights as a proxy for economic activity, for instance, would
+exaggerate or understate economic activity in these low-luminous areas.
 
 This paper attempts to address the challenge of inaccurate measurement
 of night lights by applying a filtering technique to identify and
-separate nightlights emitted by humans from those emitted by anything
-else. This filtering process is based on the methodology for deriving
+separate nightlights emitted by humans from those emitted by other
+sources. This filtering process is based on the methodology for deriving
 the `Local Human Lights' product by Määttä \& Lessmann
 (\protect\hyperlink{ref-maatta}{2019}), and relies on a Random Forest
-(RF) Machine Learning algorithm for classification.
+(RF) Machine Learning algorithm for classification. Whilst drawing on
+Määttä \& Lessmann (\protect\hyperlink{ref-maatta}{2019}), there are
+distinct differences in approach. Most prominently, Määttä \& Lessmann
+(\protect\hyperlink{ref-maatta}{2019}) apply their filter on the entire
+world, whilst including some inputs that are region specific. The
+following paper encapsulates data only from South Africa, thereby
+foregoing the necessity for region-specific adjustments. This, and other
+deviations, will be explicated on in more detail in section
+\ref{Methodology}, however. The rest of the paper is laid out as
+follows: section \ref{problem} briefly discusses some of the primary
+challenges with the DMSP-OLS data, whilst section \ref{Methodology}
+discusses the noise-filtering methodology and the data inputs needed for
+the RF algorithm. Section \ref{Results} presents some results and
+visualizations, and section \ref{Discussion} concludes.
 
-\hypertarget{explication-of-the-problem}{%
-\section{Explication of the Problem}\label{explication-of-the-problem}}
+plot of initial stable lights product:
+
+\begin{figure}[H]
+\includegraphics[width=1\linewidth]{figures/stable_full} \caption{\label{result_plot} The Raw Stable Lights Image}\label{fig:stable}
+\end{figure}
+
+\hypertarget{night-light-data-and-noise}{%
+\section{\texorpdfstring{Night Light data and Noise
+\label{problem}}{Night Light data and Noise }}\label{night-light-data-and-noise}}
 
 \hypertarget{stable-lights-and-economic-activity}{%
 \subsection{Stable Lights and Economic
 Activity}\label{stable-lights-and-economic-activity}}
+
+The Stable Lights Product is a
 
 The most prominent difficulty, however, relates to the amount of noise
 in the lower end of the light distribution due in part to the blooming
 effect mentioned above. Standard practice using the stable lights data
 set is to discard these values from analysis, thereby removing a large
 proportion of cell observations.
+
+Common solution to the problem of noise is to either filter out data
+below a certain threshold, or set those values to 0.1 (Source NB NB NB)
+
+\begin{figure}[H]
+\includegraphics[width=0.5\linewidth]{figures/stable_SA} \includegraphics[width=0.5\linewidth]{figures/stable_SA_noise_filtered} \caption{\label{result_plot} Left - Raw Stable Lights; Right - Noise Discarded}\label{fig:stable_no_noise}
+\end{figure}
+
+\begin{figure}[H]
+\includegraphics[width=1\linewidth]{figures/final} \caption{\label{result_plot} Human Lights Image }\label{fig:final}
+\end{figure}
 
 \hypertarget{method-and-data}{%
 \section{\texorpdfstring{Method and Data
@@ -297,85 +347,81 @@ proportion of cell observations.
 
 The filtering process used by Määttä \& Lessmann
 (\protect\hyperlink{ref-maatta}{2019}) attempts to more accurately
-detect specifically \emph{human-generated} night lights
+detect \emph{human-generated} night light luminosity.
 
 \hypertarget{data}{%
 \subsection{Data}\label{data}}
 
-Table ref\{variables\_table\} below gives an overview of the most
-important inputs
+Table \ref{variable_table} below gives an overview of the most important
+variables used as inputs in the machine learning algorithm. The Global
+Human Settlement Layer (GHSL) \emph{built-up} grid - satellite-derived
+images of the world based on Landsat satellites - is used to classify
+whether a certain area is more likely to contain human generated
+light.\footnote{For more on the GHSL methodology, consult Pesaresi,
+  Ehrlich, Ferri, Florczyk, Freire, Halkia, Julea, Kemper, Soille,
+  Syrris \& others (\protect\hyperlink{ref-pesaresi2016operating}{2016})}.
+The second and third variables constitute the two primary DMSP-OLS
+products released by NOAA, and is also the most crucial inputs in the
+filtering methodology. This is due to the fact that the subsequent
+variables are derived from them. The \emph{local noise} variable is used
+to identify those areas where background noise is systematically larger
+than some threshold, and consists out of the number of pixels in a
+window of 499 by 499 pixels below this threshold.\footnote{We follow
+  Määttä \& Lessmann (\protect\hyperlink{ref-maatta}{2019}) in choosing
+  the upper bound threshold value of 6 so as to be most strict in what
+  is considered noise} The \emph{local detections} counts the number of
+pixels where zero light is detected in a 399 by 399 window around a
+pixel. The rest of the variables are generated to be regional input
+variables that more closely describe the characteristics of luminosity
+surrounding a specific pixel. By varying the size of the area around a
+pixel, one more accurately accounts for spatial correlations in light
+that is human generated.
 
-``- Global Human Settlement Layer (GHSL) built-up grid. It is based on
-Landsat satellite images and prepared following the GHSL methodology
-
--The most important variables are the average visible band (avg\_light)
-and frequency of light detection (freq\_light) images from NOAA. They
-provide information on average light over one year and the percentage of
-days with light detections in a pixel.
-
-\begin{itemize}
-\item
-  In addition, we generate variables that describe light characteristics
-  around a pixel. The regional input variables address concerns that the
-  background noise in light data differs across regions. We use a
-  local\_noise variable to identify regions, where the background noise
-  in avg\_light is systematically higher. The variable counts the number
-  of pixels below the value 6 in avg\_light image in a square window of
-  499 × 499 pixels for all pixels.
-\item
-  For the Local Human Lights product, we add more variables on local
-  light characteristics to maximize the classification accuracy. We
-  create these variables by taking averages of avg\_light and
-  freq\_light on different area sizes around a pixel. For example,
-  lm\_avg\_199 calculates the average of avg\_light in a 199 × 199 pixel
-  area around a pixel. Similarly, we create the variables lm\_freq\_5,
-  lm\_avg\_25 and lm\_freq\_99. The reason for adding local averages on
-  different area sizes is that we do not know the correct radius of
-  spatial correlation in human-generated light. ''
-\end{itemize}
+\begin{table}
+\begin{center}
+\begin{tabular}{ |l|l|l| }
+ \hline
+ Input & Source & Description  \\ 
+ \hline
+  built up & GHSL & Landsat satellite images of built-up areas \\ 
+  avg light & DMSP-OLS & average light per pixel over a year \\ 
+  freq light & DMSP-OLS & proportion of days where light is detected per pixel \\
+  local noise & Derived from DMSP-OLS & number of pixels below threshold in avg light image \\
+  local detections & Derived from DMSP-OLS & accounts for regional differences in freq light \\
+  lm freq 5 & Derived from DMSP-OLS & average of freq light in a 5 by 5 pixel area \\
+  lm avg 25 & Derived from DMSP-OLS & average of avg light in a 25 by 25 pixel area \\
+  lm freq 99 & Derived from DMSP-OLS & average of freq light in a 99 by 99 pixel area \\
+  lm avg 199 & Derived from DMSP-OLS & average of avg light in a 199 by 199 pixel area \\
+  \hline
+\end{tabular}
+\caption{Data Inputs}
+\label{variable_table}
+\end{center}
+\end{table}
 
 \hypertarget{methodology}{%
 \subsection{Methodology}\label{methodology}}
 
-Maatta's methodology necessitates the following steps:
+The variables above constitute the primary inputs for Määttä \& Lessmann
+(\protect\hyperlink{ref-maatta}{2019})`s 'Human Lights' product.
+Methodologically, the following five steps are necessitated:
 
-First, a host of regional night light variables are created from two of
-the original DMSP-OLS products. These variables constitute some of the
-most important inputs of the RF algorithm.
+First, the regional night light variables are created from the original
+\emph{avg light} and \emph{freq light} DMSP-OLS products.
 
-The second step in Määttä \& Lessmann
-(\protect\hyperlink{ref-maatta}{2019})'s methodology is related to the
-division of the world map in various sub-regions, with the algorithm
+Second, the world map is divided in various sub-regions, in preparation
+that the random forest algorithm be run on each sub-region separately.
+All the variable images are cropped into 2000-pixel square sub-regions,
+which equates to about 3.4 million \(km^2\). Each sub-region consists of
+approximately 4 million rows, whilst the model is trained on a 10\%
+subsample.
 
 \begin{longtable}[]{@{}l@{}}
 \toprule
 \endhead
 5. Local Human Lights Process \\
-Our second product shifts weight from minimizing regional bias to
-maximizing the accuracy in \\
-human-generated light detection. We utilize the regional light
-characteristics in the filtering process in two ways. First, we include
-more regional variables as inputs in the random forest algorithm.
-Second, \\
-we divide the world into sub-regions and run the algorithm separately
-for each region. This allows \\
-the algorithm to learn how the light characteristics relate to built-up
-areas in different sub-regions. \\
-Since that relationship most likely differs across the world, we achieve
-a better prediction accuracy by \\
-allowing for variations in the classification rule. \\
-In practice, we crop the variable images into 2000 × 2000 pixel
-sub-regions after the data preparation \\
-phase (Step 1). Accordingly, the size of a sub-region is approximately
-3.4 million km2 at the equator, \\
-which is close to the size of India. The number of rows in a sub-region
-is 4 million, and we take a \\
-subsample of 10\% for the model training. By running different versions,
-we found this window size to \\
-have a good balance between improvements in prediction accuracy and
-being widely independent of \\
-the quality of the built-up data. However, the changes in the
-classification rule across the sub-regions \\
+However, the changes in the classification rule across the
+sub-regions \\
 causes a problem at their borders. The shifts in predicted
 probabilities, and consequently the number \\
 of lit pixels, are visibly clear. \\
@@ -418,9 +464,22 @@ keeping misclassifications at a low level. Howeve \\
 \bottomrule
 \end{longtable}
 
-Although our methodology largely follows that presented by Määttä \&
-Lessmann (\protect\hyperlink{ref-maatta}{2019}), there are some distinct
-differences.
+Many of the tasks needed for successful implementation of the filtering
+procedure are intensive both in terms of computation and memory usage.
+Due to computational limitations, we therefore employed AWS' EC2 cloud
+computing platform for parallel computation. This proved costly,
+however, and implementation thereby required some deviations from the
+methodology presented in Määttä \& Lessmann
+(\protect\hyperlink{ref-maatta}{2019}). Most crucially, the random
+forest algorithm was only applied to a subset of the world data. As our
+research interests entailed a specific country, South Africa, we limited
+the regional sub-windows to a one-square window, roughly the size of
+South Africa. Although this step may carry some costs in that it means
+that less regional variability is accounted for, these costs are
+mitigated by the possibility that there would not be large regional
+variability within a single country in any case.
+
+Other Differences:
 
 \begin{itemize}
 \tightlist
@@ -433,11 +492,6 @@ differences.
 \item
   only f152001, we do f142001 and f182011 as well
 \end{itemize}
-
-\hypertarget{random-forest-algorithm}{%
-\subsection{Random Forest Algorithm}\label{random-forest-algorithm}}
-
-RF
 
 \hypertarget{results}{%
 \section{\texorpdfstring{Results
@@ -485,11 +539,51 @@ DMSP-OLS `Stable Lights' or `Human Lights' products if possible.
 
 \hypertarget{refs}{}
 \begin{CSLReferences}{1}{0}
+\leavevmode\vadjust pre{\hypertarget{ref-chen2011}{}}%
+Chen, X. \& Nordhaus, W.D. 2011. Using luminosity data as a proxy for
+economic statistics. \emph{Proceedings of the National Academy of
+Sciences}. 108(21):8589--8594.
+
+\leavevmode\vadjust pre{\hypertarget{ref-elvidge1997}{}}%
+Elvidge, C.D., Baugh, K.E., Kihn, E.A., Kroehl, H.W., Davis, E.R. \&
+Davis, C.W. 1997. Relation between satellite observed visible-near
+infrared emissions, population, economic activity and electric power
+consumption. \emph{International Journal of Remote Sensing}.
+18(6):1373--1379.
+
+\leavevmode\vadjust pre{\hypertarget{ref-henderson2012}{}}%
+Henderson, J.V., Storeygard, A. \& Weil, D.N. 2012. Measuring economic
+growth from outer space. \emph{American economic review}.
+102(2):994--1028.
+
+\leavevmode\vadjust pre{\hypertarget{ref-ivan2020nlinequality}{}}%
+Ivan, K., Holobâcă, I.-H., Benedek, J. \& Török, I. 2020. Potential of
+night-time lights to measure regional inequality. \emph{Remote Sensing}.
+12(1):33.
+
 \leavevmode\vadjust pre{\hypertarget{ref-maatta}{}}%
 Määttä, I. \& Lessmann, C. 2019. Human lights. \emph{Remote Sensing}.
 11(19):2194.
 
+\leavevmode\vadjust pre{\hypertarget{ref-mellander2015night}{}}%
+Mellander, C., Lobo, J., Stolarick, K. \& Matheson, Z. 2015. Night-time
+light data: A good proxy measure for economic activity? \emph{PloS one}.
+10(10):e0139779.
+
+\leavevmode\vadjust pre{\hypertarget{ref-mveyange2015}{}}%
+Mveyange, A. 2015. \emph{Night lights and regional income inequality in
+africa}. WIDER Working Paper.
+
+\leavevmode\vadjust pre{\hypertarget{ref-pesaresi2016operating}{}}%
+Pesaresi, M., Ehrlich, D., Ferri, S., Florczyk, A., Freire, S., Halkia,
+M., Julea, A., Kemper, T., et al. 2016. Operating procedure for the
+production of the global human settlement layer from landsat data of the
+epochs 1975, 1990, 2000, and 2014. \emph{Publications Office of the
+European Union}. 1--62.
+
 \end{CSLReferences}
+
+\newpage
 
 \hypertarget{appendix}{%
 \section*{Appendix}\label{appendix}}
@@ -502,11 +596,9 @@ Määttä, I. \& Lessmann, C. 2019. Human lights. \emph{Remote Sensing}.
   variables table
 \end{itemize}
 
-plot of initial stable lights product
-
-plot of stable lights product with noise filtered out at lower end
-
-plot of noise-filtered result
+\begin{figure}[H]
+\includegraphics[width=1\linewidth]{figures/local_inputs} \caption{\label{local_images} Local Image Inputs}\label{fig:local_images}
+\end{figure}
 
 overlay plot of the above two with different colours
 

@@ -4,7 +4,7 @@
 # The descriptions below should be self-explanatory
 
 title: "Night Lights and Noisy Data - Using Machine Learning to Better Detect Human-Generated Light"
-subtitle: "Advanced Cross Section - January 2022"
+subtitle: "Advanced Cross Section Econometrics - January 2022"
 
 documentclass: "elsarticle"
 
@@ -60,7 +60,7 @@ output:
     fig_width: 3.5 # Adjust default figure sizes. This can also be done in the chunks of the text.
     fig_height: 3.5
 abstract: |
-  In recent years, researchers in the social sciences have increasingly relied on the usage of alternative sources of data with which to answer research questions. One of the avenues remote sensing data, and more specifically, satellite data, as . One of the most prominent of these datasets, the stable lights product from DMSP-OLS, has been especially helpful. However, this product suffers from some potentially severe accuracy-related problems. The following paper explicates on some of these, and implements an adjusted version of the noise-filtering methodology proposed by @maatta, in which the authors use a variety of derived and externally sourced remote sensing inputs to inform a Random Forest algorithm that categorises night-light data as being human-generated. This methodology proves fruitful in preserving data at the lower end of the light spectrum, which is often discarded due to it being too noisy. 
+  In recent years, researchers in the social sciences have increasingly relied on the usage of alternative sources of data with which to answer research questions. One of these alternative avenues are remote sensing data, and more specifically, satellite data. One of the most prominent of these datasets, the Stable Lights product, derived from the Defense Meteorological Satellite Program's (DMSPs) Operational Linescan System (OLS), has been especially popular. However, this product, which captures nightlight luminosity (NL) suffers from some potentially severe accuracy-related challenges, such as the blooming effect and background noise. The following paper explicates on some of these challenges, and implements an adjusted version of the noise-filtering methodology proposed by @maatta, in which the authors use a variety of derived and externally-sourced remote sensing inputs to inform a Random Forest (RF) algorithm that categorises night-light data as being human-generated. This methodology proves fruitful in addressing some of the challenges related to NL data, and therefore also in preserving data at the lower end of the light spectrum. 
   
 ---
 
@@ -77,26 +77,45 @@ knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, fig.width 
 
 # Introduction \label{Introduction}
 
-The use of remote sensing data, and more specifically, satellite nighttime light data, presents potential for new and diverse applications in socioeconomic research. Nightlight data remains a largely objective measure, and is thereby suitable to use as a proxy in a broad array of studies that require the usage of potentially unreliable or otherwise lacking data. This advantage is especially pertinent in parts of the developing world, where socioeconomic research can prove most beneficial. There exists different night 
-lights products which can be utilized towards this end, the most common of which is the 'Stable Lights' 
-product, derived from the Defense Meteorological Satellite Program's (DMSPs) Operational Linescan System 
-(OLS). This paper emphasises the usage of this product specifically focusing on its shortcomings. Most 
-prominently, DMSP-OLS has difficulty in separating background noise from night lights generated from 
-human-generated light, especially in areas that display lower levels of night light intensity. This 
-presents an obvious problem: analyses that attempt to use Stable Lights as a proxy for economic activity, for instance, would exaggerate or understate economic activity in these low-luminous areas. 
+In recent years, the expansion of the usage of remote sensing data presents potential for new and diverse applications in socioeconomic research. These data sources are often deemed largely objective and free from standard sample selection challenges, and is thereby suitable as a proxy in a broad array of studies that require the usage of potentially unreliable or unavailable data. This advantage is especially pertinent in parts of the developing world, where good data can be relatively hard to come by. One of the most prominent remote sensing data avenues has been the satellite-derived nightlight luminosity data sets, with luminosity often being used as a proxy for important measures such as population counts^[See, for instance, @mellander2015night], economic activity and growth ^[@elvidge1997; @henderson2012 and @chen2011 are prominent examples] and regional inequality indices.^[Such as in @ivan2020nlinequality and @mveyange2015]
 
-This paper attempts to address the challenge of inaccurate measurement of night lights by applying a 
-filtering technique to identify and separate nightlights emitted by humans from those emitted by anything else. This filtering process is based on the methodology for deriving the 'Local Human Lights' product by @maatta, and relies on a Random Forest (RF) Machine Learning algorithm for classification. 
+There exists different night lights products which can be utilized towards this end, the most common of which is the 'Stable Lights' product, derived from the Defense Meteorological Satellite Program's (DMSPs) Operational Linescan System (OLS). This paper emphasises the usage of this product specifically focusing on its shortcomings. Most prominently, DMSP-OLS has difficulty in separating background noise from night lights generated from human-generated light, especially in areas that display lower levels of night light intensity. This presents an obvious and difficult-to-overcome challenge: analyses that attempt to use Stable Lights as a proxy for economic activity, for instance, would exaggerate or understate economic activity in these low-luminous areas. 
 
-# Explication of the Problem
+This paper attempts to address the challenge of inaccurate measurement of night lights by applying a filtering technique to identify and separate nightlights emitted by humans from those emitted by other sources. This filtering process is based on the methodology for deriving the 'Local Human Lights' product by @maatta, and relies on a Random Forest (RF) Machine Learning algorithm for classification. Whilst drawing on @maatta, there are distinct differences in approach. Most prominently, @maatta apply their filter on the entire world, whilst including some inputs that are region specific. The following paper encapsulates data only from South Africa, thereby foregoing the necessity for region-specific adjustments. This, and other deviations, will be explicated on in more detail in section \ref{Methodology}, however. The rest of the paper is laid out as follows: section \ref{problem} briefly discusses some of the primary challenges with the DMSP-OLS data, whilst section \ref{Methodology} discusses the noise-filtering methodology and the data inputs needed for the RF algorithm. Section \ref{Results} presents some results and visualizations, and section \ref{Discussion} concludes.
+
+plot of initial stable lights product:
+
+```{r stable,fig.cap="\\label{result_plot} The Raw Stable Lights Image", echo = FALSE, message = FALSE, warning = FALSE, out.width="100%", fig.height = 5, fig.pos="H"}
+
+knitr::include_graphics("figures/stable_full.png")
+
+```
+
+
+# Night Light data and Noise \label{problem}
 
 ## Stable Lights and Economic Activity
 
-The most prominent difficulty, however, relates to the amount of noise in the lower end of the light
-distribution due in part to the blooming effect mentioned above. Standard practice using the stable 
-lights data set is to discard these values from analysis, thereby removing a large proportion of cell
-observations. 
+The Stable Lights Product is a 
 
+The most prominent difficulty, however, relates to the amount of noise in the lower end of the light distribution due in part to the blooming effect mentioned above. Standard practice using the stable lights data set is to discard these values from analysis, thereby removing a large proportion of cell observations. 
+
+
+Common solution to the problem of noise is to either filter out data below a certain threshold, or set those values to 0.1 (Source NB NB NB)
+
+```{r stable_no_noise,fig.cap="\\label{result_plot} Left - Raw Stable Lights; Right - Noise Discarded", echo=FALSE, fig.width = 5, fig.height = 5, fig.show = "hold", out.width  =  "50%"}
+
+knitr::include_graphics("figures/stable_SA.png")
+knitr::include_graphics("figures/stable_SA_noise_filtered.png")
+
+```
+
+
+```{r final,fig.cap="\\label{result_plot} Human Lights Image ", echo = FALSE, message = FALSE, warning = FALSE, out.width="100%", fig.height = 5, fig.pos="H"}
+
+knitr::include_graphics("figures/final.png")
+
+```
 
 
 # Method and Data \label{Methodology}
@@ -104,64 +123,46 @@ observations.
 
 - Short overview of @maatta
 
-The filtering process used by @maatta attempts to more accurately detect specifically _human-generated_ night lights
+The filtering process used by @maatta attempts to more accurately detect _human-generated_ night light luminosity. 
 
 
 ## Data 
-Table ref{variables_table} below gives an overview of the most important inputs 
 
-"- Global Human Settlement Layer (GHSL) built-up
-grid. It is based on Landsat satellite images and prepared following the GHSL methodology
+Table \ref{variable_table} below gives an overview of the most important variables used as inputs in the machine learning algorithm. The Global Human Settlement Layer (GHSL) _built-up_ grid - satellite-derived images of the world based on Landsat satellites - is used to classify whether a certain area is more likely to contain human generated light.^[For more on the GHSL methodology, consult @pesaresi2016operating]. The second and third variables constitute the two primary DMSP-OLS products released by NOAA, and is also the most crucial inputs in the filtering methodology. This is due to the fact that the subsequent variables are derived from them. The _local noise_ variable is used to identify those areas where background noise is systematically larger than some threshold, and consists out of the number of pixels in a window of 499 by 499 pixels below this threshold.^[We follow @maatta in choosing the upper bound threshold value of 6 so as to be most strict in what is considered noise] The _local detections_ counts the number of pixels where zero light is detected in a 399 by 399 window around a pixel. The rest of the variables are generated to be regional input variables that more closely describe the characteristics of luminosity surrounding a specific pixel. By varying the size of the area around a pixel, one more accurately accounts for spatial correlations in light that is human generated. 
 
--The most important variables are the average visible band (avg_light) and frequency
-of light detection (freq_light) images from NOAA. They provide information on average light over one
-year and the percentage of days with light detections in a pixel.
-
-- In addition, we generate variables that describe light characteristics around a pixel. The regional
-input variables address concerns that the background noise in light data differs across regions. We
-use a local_noise variable to identify regions, where the background noise in avg_light is systematically
-higher. The variable counts the number of pixels below the value 6 in avg_light image in a square
-window of 499 × 499 pixels for all pixels.
-
-- For the Local Human Lights product, we add more variables on local light characteristics to
-maximize the classification accuracy. We create these variables by taking averages of avg_light and
-freq_light on different area sizes around a pixel. For example, lm_avg_199 calculates the average of
-avg_light in a 199 × 199 pixel area around a pixel. Similarly, we create the variables lm_freq_5, lm_avg_25
-and lm_freq_99. The reason for adding local averages on different area sizes is that we do not know the
-correct radius of spatial correlation in human-generated light. "
-
-
-```{r variables_table}
-# data table with variables
-
-# List : built-up data, avg_light, freq_light, local_noise, local_detections, lm_freq_5, lm_avg_25, lm_freq_99, lm_avg_199
-
-
-```
+\begin{table}
+\begin{center}
+\begin{tabular}{ |l|l|l| }
+ \hline
+ Input & Source & Description  \\ 
+ \hline
+  built up & GHSL & Landsat satellite images of built-up areas \\ 
+  avg light & DMSP-OLS & average light per pixel over a year \\ 
+  freq light & DMSP-OLS & proportion of days where light is detected per pixel \\
+  local noise & Derived from DMSP-OLS & number of pixels below threshold in avg light image \\
+  local detections & Derived from DMSP-OLS & accounts for regional differences in freq light \\
+  lm freq 5 & Derived from DMSP-OLS & average of freq light in a 5 by 5 pixel area \\
+  lm avg 25 & Derived from DMSP-OLS & average of avg light in a 25 by 25 pixel area \\
+  lm freq 99 & Derived from DMSP-OLS & average of freq light in a 99 by 99 pixel area \\
+  lm avg 199 & Derived from DMSP-OLS & average of avg light in a 199 by 199 pixel area \\
+  \hline
+\end{tabular}
+\caption{Data Inputs}
+\label{variable_table}
+\end{center}
+\end{table}
 
 ## Methodology 
 
-Maatta's methodology necessitates the following steps:
+The variables above constitute the primary inputs for @maatta's 'Human Lights' product. Methodologically, the following five steps are necessitated:
 
-First, a host of regional night light variables are created from two of the original DMSP-OLS products. 
-These variables constitute some of the most important inputs of the RF algorithm. 
+First, the regional night light variables are created from the original _avg light_ and _freq light_ DMSP-OLS products. 
 
-The second step in @maatta's methodology is related to the division of the world map in various sub-regions, with the algorithm 
+Second, the world map is divided in various sub-regions, in preparation that the random forest algorithm be run on each sub-region separately. All the variable images are cropped into 2000-pixel square sub-regions, which equates to about 3.4 million $km^2$. Each sub-region consists of approximately 4 million rows, whilst the model is trained on a 10% subsample.
 
 ---------------------
 5. Local Human Lights Process
-Our second product shifts weight from minimizing regional bias to maximizing the accuracy in
-human-generated light detection. We utilize the regional light characteristics in the filtering process in two ways. First, we include more regional variables as inputs in the random forest algorithm. Second,
-we divide the world into sub-regions and run the algorithm separately for each region. This allows
-the algorithm to learn how the light characteristics relate to built-up areas in different sub-regions.
-Since that relationship most likely differs across the world, we achieve a better prediction accuracy by
-allowing for variations in the classification rule.
-In practice, we crop the variable images into 2000 × 2000 pixel sub-regions after the data preparation
-phase (Step 1). Accordingly, the size of a sub-region is approximately 3.4 million km2 at the equator,
-which is close to the size of India. The number of rows in a sub-region is 4 million, and we take a
-subsample of 10% for the model training. By running different versions, we found this window size to
-have a good balance between improvements in prediction accuracy and being widely independent of
-the quality of the built-up data. However, the changes in the classification rule across the sub-regions
+ However, the changes in the classification rule across the sub-regions
 causes a problem at their borders. The shifts in predicted probabilities, and consequently the number
 of lit pixels, are visibly clear.
 The solution for smoothing the border effects is to move the sub-region window in smaller steps
@@ -185,16 +186,15 @@ amount settings in a way that balances the improvement in detecting human-genera
 keeping misclassifications at a low level. Howeve
 ---------------------
 
-Although our methodology largely follows that presented by @maatta, there are some distinct differences.
+
+Many of the tasks needed for successful implementation of the filtering procedure are intensive both in terms of computation and memory usage. Due to computational limitations, we therefore employed AWS' EC2 cloud computing platform for parallel computation. This proved costly, however, and implementation thereby required some deviations from the methodology presented in @maatta. Most crucially, the random forest algorithm was only applied to a subset of the world data. As our research interests entailed a specific country, South Africa, we limited the regional sub-windows to a one-square window, roughly the size of South Africa. Although this step may carry some costs in that it means that less regional variability is accounted for, these costs are mitigated by the possibility that there would not be large regional variability within a single country in any case. 
+
+Other Differences: 
 
 - Size of area
 - Jitter size 
 - Probability of human-generated
 - only f152001, we do f142001 and f182011 as well
-
-## Random Forest Algorithm
-
-RF 
 
 
 # Results \label{Results}
@@ -232,36 +232,20 @@ than the DMSP-OLS 'Stable Lights' or 'Human Lights' products if possible.
 
 <div id="refs"></div>
 
+\newpage
 
 # Appendix {-}
 
 - images of all the different local images - refer them back to variables table
 
 
-```{r local_images,fig.cap="\\label{local_images} Local Images used as Inputs", echo = FALSE, message = FALSE, warning = FALSE, out.width="100%", fig.height = 5, fig.pos="H"}
-# 
-# knitr::include_graphics("figures/   .png")
-# knitr::include_graphics("figures/   .png")
-# knitr::include_graphics("figures/   .png")
-# knitr::include_graphics("figures/   .png")
-# knitr::include_graphics("figures/   .png")
-# knitr::include_graphics("figures/   .png")
+```{r local_images,fig.cap="\\label{local_images} Local Image Inputs", echo = FALSE, message = FALSE, warning = FALSE, out.width="100%", fig.height = 5, fig.pos="H"}
+ 
+knitr::include_graphics("figures/local_inputs.png")
 
 ```
 
-plot of initial stable lights product 
 
-```{r stable,fig.cap="\\label{result_plot} Local Images used as Inputs", echo = FALSE, message = FALSE, warning = FALSE, out.width="100%", fig.height = 5, fig.pos="H"}
-
-```
-
-plot of stable lights product with noise filtered out at lower end
-
-```{r stable_no_noise,fig.cap="\\label{result_plot} Local Images used as Inputs", echo = FALSE, message = FALSE, warning = FALSE, out.width="100%", fig.height = 5, fig.pos="H"}
-
-```
-
-plot of noise-filtered result 
 
 ```{r filtered,fig.cap="\\label{result_plot} Local Images used as Inputs", echo = FALSE, message = FALSE, warning = FALSE, out.width="100%", fig.height = 5, fig.pos="H"}
 

@@ -39,35 +39,72 @@ bui <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/prepared/builtup/buil
 shpSA <- readOGR("C:/SARB/Truck-o-Meter/Truck-o-Meter/data/shapefile/gadm36_ZAF_0.shp")
 shpSA <- spTransform(shpSA, crs(avg))
 
+avg_stack=stack(avg_mask)
+pct_stack=stack(pct)
+#then plot it an RGB raster
+plotRGB(avg_stack)
+plotRGB(pct_stack)
+
+plot(avg)
+plot(pct)
 
 # match extent of the input raster images
 avg = crop(avg,extent(shpSA))
 avg_mask = mask(avg, shpSA)
 pct = crop(pct,extent(shpSA))
+pct_mask = mask(pct, shpSA)
 lma = crop(lma,extent(shpSA))
+lma_mask = mask(lma, shpSA)
 lmb = crop(lmb,extent(shpSA))
+lmb_mask = mask(lmb, shpSA)
 lmc = crop(lmc,extent(shpSA))
+lmc_mask = mask(lmc, shpSA)
 lmd = crop(lmd,extent(shpSA))
+lmd_mask = mask(lmd, shpSA)
+lme = crop(lme,extent(shpSA))
+lme_mask = mask(lme, shpSA)
 lmf = crop(lmf,extent(shpSA))
+lmf_mask = mask(lmf, shpSA)
 bui = crop(bui,extent(shpSA))
+bui_mask = mask(bui, shpSA)
 
 my.palette <- brewer.pal(n = 20, name = "OrRd")
 projection(avg_mask) <- "+proj=longlat +datum=WGS84 +no_defs"
 
 
+#stable 
 
-plot(avg_mask, 
-     col= my.palette,
-     box = F, 
-     axes = F)
-plot(shpSA, border = "black", add = T)
+stable <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/Nightlight/F182011.v4/F182011.v4c_web.stable_lights.avg_vis.tif"))
+stable_crop <- crop(stable, shpSA)
+stable_mask <- mask(stable_crop, shpSA)
+    
+stable_stack=stack(stable_mask)
+plotRGB(stable_stack, 2,1)
+
+plot(shpSA)
+plot(stable_stack, add = T)
+
+raster_brick <- brick(lma_mask,lmb_mask,lmc_mask,lmd_mask,lme_mask,lmf_mask)
+plot(raster_brick, legend = F, box = F, axes = F)
 
 
+plot(stable_mask)
+plot(shpSA, add= T)
+stable_mask[stable_mask < 6] <- 0.1
+plot(stable_mask)
+plot(shpSA, add= T)
+# Final Images
 
-# to make DF:
-avg <- rasterToPoints(avg, spatial = TRUE)
-# Then to a 'conventional' dataframe
-avg_df  <- data.frame(avg)
+final <- raster(paste0(" C:/Projects/Masters-Thesis-2021/data/final_products/Local_Human_Lights_f182011.tif"))
+final_crop <- crop(final, shpSA)
+final_mask <- mask(final_crop, shpSA)
+final_stack=stack(final_mask)
+plotRGB(final_stack)
+
+plot(avg_mask)
+plot(final_mask, box = F)
+plot(shpSA, add = T)
+
 
 
 ```
