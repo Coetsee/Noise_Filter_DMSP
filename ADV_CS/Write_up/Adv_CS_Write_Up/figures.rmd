@@ -45,8 +45,6 @@ pct_stack=stack(pct)
 plotRGB(avg_stack)
 plotRGB(pct_stack)
 
-plot(avg)
-plot(pct)
 
 # match extent of the input raster images
 avg = crop(avg,extent(shpSA))
@@ -68,10 +66,6 @@ lmf_mask = mask(lmf, shpSA)
 bui = crop(bui,extent(shpSA))
 bui_mask = mask(bui, shpSA)
 
-my.palette <- brewer.pal(n = 20, name = "OrRd")
-projection(avg_mask) <- "+proj=longlat +datum=WGS84 +no_defs"
-
-
 #stable 
 
 stable <- raster(paste0("C:/Projects/Masters-Thesis-2021/data/Nightlight/F182011.v4/F182011.v4c_web.stable_lights.avg_vis.tif"))
@@ -79,7 +73,7 @@ stable_crop <- crop(stable, shpSA)
 stable_mask <- mask(stable_crop, shpSA)
     
 stable_stack=stack(stable_mask)
-plotRGB(stable_stack, 2,1)
+plotRGB(stable_stack)
 
 plot(shpSA)
 plot(stable_stack, add = T)
@@ -90,7 +84,7 @@ plot(raster_brick, legend = F, box = F, axes = F)
 
 plot(stable_mask)
 plot(shpSA, add= T)
-stable_mask[stable_mask < 6] <- 0.1
+stable_mask[stable_mask < 6] <- NULL
 plot(stable_mask)
 plot(shpSA, add= T)
 # Final Images
@@ -106,6 +100,19 @@ plot(final_mask, box = F)
 plot(shpSA, add = T)
 
 
+finalf14 <- raster(paste0(" C:/Projects/Masters-Thesis-2021/data/final_products/Local_Human_Lights_f142001.tif"))
+final_crop_f14 <- crop(finalf14, shpSA)
+final_mask_f14 <- mask(final_crop_f14, shpSA)
+
+plot(final_mask_f14, box = F, axes = F)
+plot(shpSA, add = T)
+
+finalf15 <- raster(paste0(" C:/Projects/Masters-Thesis-2021/data/final_products/Local_Human_Lights_f152001.tif"))
+final_crop_f15 <- crop(finalf15, shpSA)
+final_mask_f15 <- mask(final_crop_f15, shpSA)
+
+plot(final_mask_f15, box = F, axes = F)
+plot(shpSA, add = T)
 
 ```
 
